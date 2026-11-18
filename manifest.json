@@ -1,0 +1,18 @@
+{
+  "name": "CineCam - Cinematic Film Photo Editor",
+  "short_name": "CineCam",
+  "description": "แต่งรูปกล้องฟิล์มและสไตล์ภาพยนตร์ 35mm สำหรับ Samsung และ Android",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0c0e12",
+  "theme_color": "#15181e",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

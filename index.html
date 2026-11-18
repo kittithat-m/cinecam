@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#121417">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CineCam">
+  <meta name="description" content="Cinematic & Vintage Film Photo Editor Web App for Samsung & Android">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <title>CineCam - Cinematic Film Editor</title>
+
+  <!-- Google Fonts: Space Grotesk & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Bar -->
+    <header class="top-nav">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <circle cx="12" cy="12" r="3.2"/>
+            <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+          </svg>
+        </div>
+        <span class="brand-name">Cine<span>Cam</span></span>
+        <span class="badge">35mm</span>
+      </div>
+
+      <div class="top-actions">
+        <button id="btnCompare" class="btn-icon" title="กดค้างเพื่อดูรูปต้นฉบับ" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 3h5v5M4 20L21 3m-7 18h7v-5M9 21l12-12"/>
+          </svg>
+          <span class="btn-text">เทียบต้นฉบับ</span>
+        </button>
+
+        <button id="btnReset" class="btn-icon" title="รีเซ็ตค่า" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+
+        <button id="btnExport" class="btn-primary" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          <span>บันทึกรูป</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="main-layout">
+      <!-- Image Canvas Viewport -->
+      <section class="preview-area" id="previewArea">
+        <!-- Empty State (No Image Loaded) -->
+        <div class="empty-state" id="emptyState">
+          <div class="upload-card">
+            <div class="upload-icon-pulse">
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6">
+                <rect x="3" y="3" width="18" height="18" rx="4" ry="4"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <h2>เลือกรูปภาพเพื่อเริ่มแต่ง</h2>
+            <p>แต่งภาพโทนหนังภาพยนตร์, กล้องฟิล์ม 35mm, CineStill 800T, และกล้องวินเทจ</p>
+            <div class="upload-btn-group">
+              <label for="imageInput" class="btn-upload">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+                <span>เลือกจากแกลเลอรี</span>
+              </label>
+              <button id="btnLoadSample" class="btn-secondary">
+                <span>ลองรูปตัวอย่าง</span>
+              </button>
+            </div>
+            <input type="file" id="imageInput" accept="image/*">
+            <div class="tip-pill">
+              💡 <span>ทริค: บน Samsung สามารถกดเพิ่มแอปนี้ไว้ที่หน้าจอหลักได้ทันที</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Container with aspect ratio framing -->
+        <div class="canvas-wrapper hidden" id="canvasWrapper">
+          <canvas id="previewCanvas"></canvas>
+          <div class="comparison-badge hidden" id="comparisonBadge">ต้นฉบับ ORIGINAL</div>
+          <div class="loader-overlay hidden" id="loaderOverlay">
+            <div class="spinner"></div>
+            <span>กำลังประมวลผล...</span>
+          </div>
+        </div>
+
+        <!-- Mobile Floating Action Bar for Changing Image -->
+        <div class="floating-tools hidden" id="floatingTools">
+          <label for="imageInputMobile" class="pill-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/>
+            </svg>
+            เปลี่ยนรูป
+          </label>
+          <input type="file" id="imageInputMobile" accept="image/*" class="hidden">
+        </div>
+      </section>
+
+      <!-- Control Panel / Bottom Sheet on Mobile -->
+      <aside class="control-panel" id="controlPanel">
+        <!-- Control Tabs -->
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="presets">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            <span>พรีเซ็ต</span>
+          </button>
+          <button class="tab-btn" data-tab="cinema">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+              <line x1="7" y1="2" x2="7" y2="22"/>
+              <line x1="17" y1="2" x2="17" y2="22"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <line x1="2" y1="7" x2="7" y2="7"/>
+              <line x1="2" y1="17" x2="7" y2="17"/>
+              <line x1="17" y1="17" x2="22" y2="17"/>
+              <line x1="17" y1="7" x2="22" y2="7"/>
+            </svg>
+            <span>สัดส่วน & ซีน</span>
+          </button>
+          <button class="tab-btn" data-tab="titles">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 7 4 4 20 4 20 7"/>
+              <line x1="9" y1="20" x2="15" y2="20"/>
+              <line x1="12" y1="4" x2="12" y2="20"/>
+            </svg>
+            <span>ไตเติลหนัง</span>
+          </button>
+          <button class="tab-btn" data-tab="adjust">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="21" x2="4" y2="14"/>
+              <line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/>
+              <line x1="20" y1="12" x2="20" y2="3"/>
+              <line x1="1" y1="14" x2="7" y2="14"/>
+              <line x1="9" y1="8" x2="15" y2="8"/>
+              <line x1="17" y1="16" x2="23" y2="16"/>
+            </svg>
+            <span>ปรับแต่งฟิล์ม</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Presets -->
+        <div class="tab-content active" id="tab-presets">
+          <div class="panel-header">
+            <h3>ฟิลเตอร์สไตล์กล้องฟิล์ม & ซีนหนัง</h3>
+            <p>แตะเพื่อใส่โทนทันที</p>
+          </div>
+          <div class="presets-grid" id="presetsGrid">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Aspect Ratio & Framing -->
+        <div class="tab-content" id="tab-cinema">
+          <div class="panel-header">
+            <h3>สัดส่วนภาพยนตร์ (Cinematic Framing)</h3>
+            <p>เลือกสัดส่วนภาพสไตล์หนังหรือขอบฟิล์ม</p>
+          </div>
+
+          <div class="section-group">
+            <label class="section-title">สัดส่วนภาพ (Aspect Ratio)</label>
+            <div class="aspect-chips" id="aspectChips">
+              <button class="chip active" data-aspect="original">เดิม (Original)</button>
+              <button class="chip" data-aspect="16-9">🎬 16:9 (Cinema)</button>
+              <button class="chip" data-aspect="21-9">🎞️ 2.39:1 (Widescreen)</button>
+              <button class="chip" data-aspect="4-3">📷 4:3 (Vintage)</button>
+              <button class="chip" data-aspect="1-1">⏹️ 1:1 (Square)</button>
+              <button class="chip" data-aspect="9-16">📱 9:16 (Story)</button>
+            </div>
+          </div>
+
+          <div class="section-group">
+            <label class="section-title">ขอบภาพ & แถบดำภาพยนตร์</label>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span>ขอบดำบน-ล่าง (Cinema Letterbox)</span>
+                <small>ใส่ขอบดำแบบภาพยนตร์โดยคงอัตราส่วนเดิม</small>
+              </div>
+              <input type="checkbox" id="cinemaBarsToggle" class="switch">
+            </div>
+            <div class="slider-group hidden" id="cinemaBarsGroup">
+              <div class="slider-header">
+                <span>ความหนาขอบดำ</span>
+                <span id="cinemaBarsValue">8%</span>
+              </div>
+              <input type="range" id="cinemaBarsSlider" min="2" max="20" value="8">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Movie Titles & Subtitles -->
+        <div class="tab-content" id="tab-titles">
+          <div class="panel-header">
+            <h3>ข้อความไตเติลภาพยนตร์ (Movie Titles)</h3>
+            <p>ใส่ชื่อเพลง, ไตเติลฉาก, หรือชื่อผู้กำกับแบบในรูป Carly Rae Jepsen</p>
+          </div>
+
+          <div class="section-group">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span>เปิดข้อความไตเติล (Movie Titles)</span>
+                <small>แสดงตัวอักษรสีขาวสไตล์ภาพยนตร์คลาสสิก</small>
+              </div>
+              <input type="checkbox" id="titleToggle" class="switch" checked>
+            </div>
+          </div>
+
+          <div class="section-group" id="titleControls">
+            <div class="input-field">
+              <label for="titleLeft">ข้อความซ้าย (เช่น ชื่อฉาก / ไตเติล)</label>
+              <input type="text" id="titleLeft" value="DAY AND NIGHT (CONTINUED)" placeholder="DAY AND NIGHT (CONTINUED)">
+            </div>
+
+            <div class="input-field">
+              <label for="titleRight">ข้อความขวา (เช่น ชื่อศิลปิน / ผู้กำกับ)</label>
+              <input type="text" id="titleRight" value="CARLY RAE JEPSEN" placeholder="CARLY RAE JEPSEN">
+            </div>
+
+            <div class="input-field">
+              <label for="fontSelect">สไตล์ฟอนต์</label>
+              <select id="fontSelect">
+                <option value="Space Grotesk">Classic Film Title (Space Grotesk)</option>
+                <option value="Inter">Clean Cinema Sans (Inter)</option>
+                <option value="Courier New">Retro Screenplay / Script</option>
+                <option value="VT323">Digital CCD / Cyber retro</option>
+              </select>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>ขนาดตัวอักษร</span>
+                <span id="fontSizeVal">18px</span>
+              </div>
+              <input type="range" id="fontSizeSlider" min="10" max="36" value="18">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>ความทึบแสง (Opacity)</span>
+                <span id="fontOpacityVal">90%</span>
+              </div>
+              <input type="range" id="fontOpacitySlider" min="30" max="100" value="90">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>ตำแหน่งตามแนวตั้ง (Top Position)</span>
+                <span id="fontPosVal">20%</span>
+              </div>
+              <input type="range" id="fontPosSlider" min="5" max="90" value="20">
+            </div>
+          </div>
+
+          <div class="section-group">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span>แสตมป์วันที่สีส้มสไตล์ Dazz Cam</span>
+                <small>จำลองวันที่สีส้มมุมขวาล่างของกล้องฟิล์ม 90s</small>
+              </div>
+              <input type="checkbox" id="dateStampToggle" class="switch">
+            </div>
+            <div class="input-field hidden" id="dateStampControls">
+              <label for="dateStampText">ข้อความวันที่</label>
+              <input type="text" id="dateStampText" value="'26 11 18">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Manual Fine Adjustments -->
+        <div class="tab-content" id="tab-adjust">
+          <div class="panel-header">
+            <h3>ปรับแต่งฟิล์ม & แสงสีละเอียด</h3>
+            <p>ปรับโทนทังสเตน แสงเงา และเกรนฟิล์ม</p>
+          </div>
+
+          <!-- Film Texture section -->
+          <div class="section-group">
+            <label class="section-title">ฟิลลิ่งกล้องฟิล์ม (Film Characteristics)</label>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>เกรนฟิล์ม (Film Grain)</span>
+                <span id="grainVal">25%</span>
+              </div>
+              <input type="range" id="sliderGrain" min="0" max="80" value="25">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>ความฟุ้งของแสงไฟ (Halation / Bloom)</span>
+                <span id="halationVal">30%</span>
+              </div>
+              <input type="range" id="sliderHalation" min="0" max="80" value="30">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>ขอบมืด (Vignette)</span>
+                <span id="vignetteVal">35%</span>
+              </div>
+              <input type="range" id="sliderVignette" min="0" max="80" value="35">
+            </div>
+          </div>
+
+          <!-- Color Grading section -->
+          <div class="section-group">
+            <label class="section-title">การย้อมสี (Split Toning / Film Color)</label>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>ย้อมเงาเขียวมุก (Green Shadow Tint)</span>
+                <span id="shadowTintVal">+25</span>
+              </div>
+              <input type="range" id="sliderShadowTint" min="-50" max="50" value="25">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>อุณหภูมิแสงส้มทังสเตน (Warm Tungsten)</span>
+                <span id="tempVal">+20</span>
+              </div>
+              <input type="range" id="sliderTemp" min="-50" max="50" value="20">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>การเปิดรับแสง (Exposure)</span>
+                <span id="expVal">0</span>
+              </div>
+              <input type="range" id="sliderExposure" min="-40" max="40" value="0">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>คอนทราสต์ (Contrast)</span>
+                <span id="contrastVal">+15</span>
+              </div>
+              <input type="range" id="sliderContrast" min="-40" max="50" value="15">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>ความอิ่มตัวสี (Saturation)</span>
+                <span id="satVal">0</span>
+              </div>
+              <input type="range" id="sliderSat" min="-50" max="50" value="0">
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
